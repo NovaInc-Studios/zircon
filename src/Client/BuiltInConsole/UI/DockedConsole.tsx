@@ -292,7 +292,7 @@ class ZirconConsoleComponent extends Roact.Component<DockedConsoleProps, DockedC
 									return new UDim2(0, 0, 0, this.state.isFullView ? v : 0);
 								})}
 								Size={this.filterSizeY.map((v) => {
-									return new UDim2(1, 0, 1, this.state.isFullView ? v - 30 : -30);
+									return new UDim2(1, 0, 1, this.state.isFullView ? v - 110 : -30);
 								})}
 								BackgroundTransparency={1}
 							>
