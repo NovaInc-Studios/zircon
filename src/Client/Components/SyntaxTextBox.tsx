@@ -38,6 +38,13 @@ interface SyntaxTextBoxProps {
 	 */
 	RefocusOnSubmit?: boolean;
 
+	/**
+	 * Indicates whether the input field should be cleared when it receives focus.
+	 *
+	 * @type {boolean}
+	 */
+	ClearOnFocus?: boolean;
+
 	CancelKeyCodes?: Enum.KeyCode[];
 
 	/**
@@ -147,7 +154,7 @@ export default class ZirconSyntaxTextBox extends Roact.Component<SyntaxTextBoxPr
 								TextSize={18}
 								TextXAlignment="Left"
 								TextYAlignment="Top"
-								ClearTextOnFocus
+								ClearTextOnFocus={this.props.ClearOnFocus}
 								PlaceholderColor3={theme.SecondaryTextColor3}
 								PlaceholderText={this.props.PlaceholderText}
 								CursorPosition={this.state.cursorPosition}
@@ -162,7 +169,8 @@ export default class ZirconSyntaxTextBox extends Roact.Component<SyntaxTextBoxPr
 								TextTransparency={0.75}
 								Event={{
 									Focused: (rbx) => {
-										this.setState({ focused: true, source: "" });
+										this.props.ClearOnFocus ? this.setState({ focused: true, source: "" })
+											: this.setState({ focused: true });
 
 										this.focusMaid.GiveTask(
 											UserInputService.InputBegan.Connect((io) => {
@@ -184,6 +192,7 @@ export default class ZirconSyntaxTextBox extends Roact.Component<SyntaxTextBoxPr
 									FocusLost: (textBox, enterPressed, inputThatCausedFocusLoss) => {
 										if (enterPressed && !this.props.MultiLine) {
 											this.props.OnEnterSubmit?.(textBox.Text);
+											this.props.ClearOnFocus && this.setState({ source: "" });
 										}
 
 										this.setState({ focused: false });

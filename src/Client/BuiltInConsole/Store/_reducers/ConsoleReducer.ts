@@ -21,6 +21,7 @@ export interface ActionSetConsoleConfiguration extends Action<ConsoleActionName.
 	executionEnabled: boolean;
 	hotkeyEnabled: boolean;
 	autoFocusTextBox: boolean;
+	clearOnFocus: boolean;
 	showTagsInOutput: boolean;
 	logDetailsPaneEnabled: boolean;
 	bindKeys: KeyCode[];
@@ -71,6 +72,7 @@ export interface ConsoleReducer {
 	executionEnabled: boolean;
 	hotkeyEnabled: boolean;
 	autoFocusTextBox: boolean;
+	clearOnFocus: boolean;
 	logDetailsPaneEnabled: boolean;
 	showTagsInOutput: boolean;
 	output: ConsoleMessage[];
@@ -90,6 +92,7 @@ export const DEFAULT_FILTER = new Set([
 const INITIAL_STATE: ConsoleReducer = {
 	visible: false,
 	autoFocusTextBox: true,
+	clearOnFocus: false,
 	executionEnabled: false,
 	hotkeyEnabled: false,
 	canExecuteLocalScripts: false,
@@ -107,7 +110,7 @@ const actions: Rodux.ActionHandlers<ConsoleReducer, ConsoleActions> = {
 	[ConsoleActionName.SetConsoleVisible]: (state, { visible }) => ({ ...state, visible }),
 	[ConsoleActionName.SetConfiguration]: (
 		state,
-		{ executionEnabled, hotkeyEnabled, showTagsInOutput, logDetailsPaneEnabled, autoFocusTextBox, bindKeys },
+		{ executionEnabled, hotkeyEnabled, showTagsInOutput, logDetailsPaneEnabled, autoFocusTextBox, clearOnFocus, bindKeys },
 	) => ({
 		...state,
 		executionEnabled,
@@ -115,16 +118,17 @@ const actions: Rodux.ActionHandlers<ConsoleReducer, ConsoleActions> = {
 		showTagsInOutput,
 		logDetailsPaneEnabled,
 		autoFocusTextBox,
+		clearOnFocus,
 		bindingKeys: bindKeys,
 	}),
 	[ConsoleActionName.SetClientExecutionEnabled]: (state, { enabled }) => {
 		return { ...state, canExecuteLocalScripts: enabled };
 	},
 	[ConsoleActionName.AddOutput]: (state, { message }) => {
-		return $dbg({
+		return {
 			...state,
 			output: [...state.output, message],
-		});
+		}
 	},
 	[ConsoleActionName.AddHistory]: (state, { message }) => ({
 		...state,

@@ -108,6 +108,7 @@ namespace ZirconClient {
 		Keys?: Array<Enum.KeyCode>;
 		EnableTags?: boolean;
 		AutoFocusTextBox?: boolean;
+		ClearOnFocus?: boolean;
 		ConsoleComponent?: typeof Roact.Component | ((props: defined) => Roact.Element);
 		/** @internal */
 		Theme?: keyof BuiltInThemes;
@@ -120,6 +121,7 @@ namespace ZirconClient {
 			Keys = [Enum.KeyCode.F10],
 			ConsoleComponent = ZirconDockedConsole,
 			Theme = "Plastic",
+			ClearOnFocus = false,
 			AutoFocusTextBox = true,
 			EnableTags = true,
 		} = options;
@@ -158,6 +160,7 @@ namespace ZirconClient {
 				type: ConsoleActionName.SetConfiguration,
 				hotkeyEnabled: permissions.has("CanAccessConsole"),
 				autoFocusTextBox: AutoFocusTextBox,
+				clearOnFocus: ClearOnFocus,
 				bindKeys: Keys,
 				executionEnabled: permissions.has("CanExecuteZirconiumScripts"),
 				logDetailsPaneEnabled: permissions.has("CanViewLogMetadata"),
@@ -179,7 +182,7 @@ namespace ZirconClient {
 		const initialized = Remotes.Client.Get(RemoteId.GetZirconInitialized).CallServerAsync().expect();
 
 		consoleBound = true;
-		if (initialized === false) {
+		if (!initialized) {
 			Remotes.Client.WaitFor(RemoteId.ZirconInitialized).then((remote) => {
 				const connection = remote.Connect(() => {
 					BindConsoleIntl(options);

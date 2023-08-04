@@ -190,6 +190,7 @@ class ZirconConsoleComponent extends Roact.Component<DockedConsoleProps, DockedC
 						<ZirconSyntaxTextBox
 							RefocusOnSubmit={this.props.autoFocus}
 							AutoFocus={this.props.autoFocus}
+							ClearOnFocus={this.props.clearOnFocus}
 							CancelKeyCodes={this.props.toggleKeys}
 							OnCancel={this.props.close}
 							PlaceholderText="Enter script to execute"
@@ -442,12 +443,14 @@ interface MappedProps {
 	searchQuery: string;
 	toggleKeys: Enum.KeyCode[];
 	autoFocus: boolean;
+	clearOnFocus: boolean;
 	levelFilter: Set<ZirconLogLevel>;
 }
 const mapStateToProps = (state: ConsoleReducer): MappedProps => {
 	return {
 		isVisible: state.visible,
 		autoFocus: state.autoFocusTextBox,
+		clearOnFocus: state.clearOnFocus,
 		toggleKeys: state.bindingKeys,
 		levelFilter: state.filter.Levels ?? DEFAULT_FILTER,
 		executionEnabled: state.executionEnabled,
