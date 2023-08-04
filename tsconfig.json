@@ -1,43 +1,52 @@
 {
-	"compilerOptions": {
-		// required
-		"allowSyntheticDefaultImports": true,
-		"downlevelIteration": true,
-		"jsx": "react",
-		"jsxFactory": "Roact.createElement",
-		"module": "commonjs",
-		"moduleResolution": "Node",
-		"noLib": true,
-		"resolveJsonModule": true,
-		"strict": true,
-		"target": "ESNext",
-		"typeRoots": ["node_modules/@rbxts"],
-		"moduleDetection": "force",
-
-		// configurable
-		"rootDir": "src",
-		"outDir": "out",
-		"baseUrl": "src",
-		"stripInternal": true,
-		"declaration": true,
-		"plugins": [
-			{
-				"transform": "rbxts-transform-env"
-			},
-			{
-				"transform": "rbxts-transform-debug",
-				"environmentRequires": {
-					"NODE_ENV": "development"
-				}
-			},
-			{
-				"transform": "rbxts-transformer-services"
-			}
-		]
-	},
-	"exclude": [
-		"example/**",
-		"out/**",
-		"docs/**"
-	]
+  "compilerOptions": {
+    // required
+    "allowSyntheticDefaultImports": true,
+    "downlevelIteration": true,
+    "jsx": "react",
+    "jsxFactory": "Roact.createElement",
+    "module": "commonjs",
+    "moduleResolution": "Node",
+    "noLib": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "target": "ESNext",
+    "typeRoots": [
+      "node_modules/@rbxts"
+    ],
+    "moduleDetection": "force",
+    // configurable
+    "rootDir": "src",
+    "outDir": "out",
+    "baseUrl": "src",
+    "stripInternal": true,
+    "declaration": true,
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    },
+    "plugins": [
+      {
+        "transform": "rbxts-transform-env"
+      },
+      {
+        "transform": "rbxts-transform-debug",
+        "environmentRequires": {
+          "NODE_ENV": "development"
+        }
+      },
+      {
+        "transform": "rbxts-transformer-services"
+      }
+    ]
+  },
+  "exclude": [
+    "example/**",
+    "out/**",
+    "docs/**"
+  ],
+  "include": [
+    "src/**/*"
+  ]
 }
