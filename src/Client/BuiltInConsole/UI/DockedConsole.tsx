@@ -87,8 +87,7 @@ class ZirconConsoleComponent extends Roact.Component<DockedConsoleProps, DockedC
 		this.sizeYMotor.onStep((value) => setSizeY(value));
 		this.outputTransparencyMotor.onStep((value) => setOutputTransparency(value));
 
-		const DispatchToServer = Remotes.Client.WaitFor(RemoteId.DispatchToServer).expect();
-		this.dispatch = DispatchToServer;
+		this.dispatch = Remotes.Client.WaitFor(RemoteId.DispatchToServer).expect();
 	}
 
 	public didMount() {}
@@ -185,7 +184,6 @@ class ZirconConsoleComponent extends Roact.Component<DockedConsoleProps, DockedC
 								ItemSelected={(value) => this.setState({ context: value.Id })}
 							/>
 						)}
-						{/* <ZirconIconButton Size={new UDim2(0, 16, 0, 28)} Icon="Zirconium" OnClick={() => {}} /> */}
 						<ZirconIcon Size={new UDim2(0, 16, 0, 28)} Icon="RightArrow" />
 						<ZirconSyntaxTextBox
 							RefocusOnSubmit={this.props.autoFocus}
