@@ -48,6 +48,7 @@ class ZirconConsoleComponent extends Roact.Component<DockedConsoleProps, DockedC
 	private filterSettingsSizeY: SingleMotor;
 	private positionYMotor: SingleMotor;
 	private sizeYMotor: SingleMotor;
+	private blurSizeMotor: SingleMotor;
 	private outputTransparencyMotor: SingleMotor;
 	private dispatch: ClientSenderEvent<[input: string]>;
 
@@ -67,6 +68,7 @@ class ZirconConsoleComponent extends Roact.Component<DockedConsoleProps, DockedC
 
 		// Initialization
 		this.positionYMotor = new SingleMotor(0);
+		this.blurSizeMotor = new SingleMotor(0);
 		this.sizeYMotor = new SingleMotor(MAX_SIZE);
 		this.filterSettingsSizeY = new SingleMotor(0);
 		this.outputTransparencyMotor = new SingleMotor(0.1);
@@ -74,6 +76,10 @@ class ZirconConsoleComponent extends Roact.Component<DockedConsoleProps, DockedC
 		let setSizeY: Roact.BindingFunction<number>;
 		let setOutputTransparency: Roact.BindingFunction<number>;
 		let setFilterSizeY: Roact.BindingFunction<number>;
+
+		// Effects
+		const blur = new Instance("BlurEffect", Lighting);
+		blur.Size = 0;
 
 		// Bindings
 		[this.positionY, setPositionY] = Roact.createBinding(this.positionYMotor.getValue());
@@ -86,6 +92,7 @@ class ZirconConsoleComponent extends Roact.Component<DockedConsoleProps, DockedC
 		this.positionYMotor.onStep((value) => setPositionY(value));
 		this.sizeYMotor.onStep((value) => setSizeY(value));
 		this.outputTransparencyMotor.onStep((value) => setOutputTransparency(value));
+		this.blurSizeMotor.onStep((value) => (blur.Size = value));
 
 		this.dispatch = Remotes.Client.WaitFor(RemoteId.DispatchToServer).expect();
 	}
@@ -104,6 +111,8 @@ class ZirconConsoleComponent extends Roact.Component<DockedConsoleProps, DockedC
 			this.outputTransparencyMotor.setGoal(new Spring(this.state.isFullView ? 0.35 : 0.1));
 			this.filterSettingsSizeY.setGoal(new Spring(this.state.isFullView || this.state.filterVisible ? 40 : 0));
 			this.sizeYMotor.setGoal(new Spring(size));
+			this.blurSizeMotor.setGoal(new Spring(this.props.isVisible && this.state.isFullView ? 16 : 0));
+
 			this.setState({ isVisible: this.props.isVisible });
 		}
 
