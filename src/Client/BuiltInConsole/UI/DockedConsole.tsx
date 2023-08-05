@@ -12,7 +12,7 @@ import ZirconClientStore from "../Store";
 import ThemeContext from "../../../Client/UIKit/ThemeContext";
 import { ZirconContext, ZirconLogLevel, ZirconMessageType } from "../../../Client/Types";
 import Dropdown from "Client/Components/Dropdown";
-import { Workspace } from "@rbxts/services";
+import {Lighting, Workspace} from "@rbxts/services";
 import Padding from "Client/Components/Padding";
 import SearchTextBox from "Client/Components/SearchTextBox";
 import MultiSelectDropdown from "Client/Components/MultiSelectDropdown";
