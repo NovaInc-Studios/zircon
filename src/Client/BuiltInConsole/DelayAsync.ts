@@ -1,7 +1,7 @@
 const RunService = game.GetService("RunService");
 
 export function fspawn(fn: () => void) {
-	return coroutine.wrap(fn)();
+    return coroutine.wrap(fn)();
 }
 
 /**
@@ -10,7 +10,7 @@ export function fspawn(fn: () => void) {
  * ```ts
  * // Example usage:
  * delayAsync(10).then(() => {
- * 	print("Waited 10 seconds to execute this!");
+ *    print("Waited 10 seconds to execute this!");
  * });
  * ```
  *
@@ -28,37 +28,37 @@ export function fspawn(fn: () => void) {
  * @param useRenderStepped To use renderStepped - for plugins iirc?
  */
 export default function delayAsync(timeout?: number, useRenderStepped?: boolean): Promise<[number, number]> {
-	return new Promise((resolve, _, onCancel) => {
-		fspawn(() => {
-			const endTime = tick() + (timeout !== undefined ? timeout : 1 / 60);
-			let ticking = true;
+    return new Promise((resolve, _, onCancel) => {
+        fspawn(() => {
+            const endTime = tick() + (timeout !== undefined ? timeout : 1 / 60);
+            let ticking = true;
 
-			onCancel(() => {
-				ticking = false;
-			});
+            onCancel(() => {
+                ticking = false;
+            });
 
-			while (tick() < endTime && ticking) {
-				if (useRenderStepped) {
-					RunService.RenderStepped.Wait();
-				} else {
-					RunService.Stepped.Wait();
-				}
-			}
+            while (tick() < endTime && ticking) {
+                if (useRenderStepped) {
+                    RunService.RenderStepped.Wait();
+                } else {
+                    RunService.Stepped.Wait();
+                }
+            }
 
-			if (tick() >= endTime) {
-				resolve([tick(), time()]);
-			}
-		});
-	});
+            if (tick() >= endTime) {
+                resolve([tick(), time()]);
+            }
+        });
+    });
 }
 
 export function waitUntilDescendantOfGame(instance: Instance): Promise<Instance> {
-	return Promise.defer((resolve) => {
-		while (!instance.IsDescendantOf(game)) {
-			RunService.Stepped.Wait();
-		}
-		resolve(instance.Parent!);
-	});
+    return Promise.defer((resolve) => {
+        while (!instance.IsDescendantOf(game)) {
+            RunService.Stepped.Wait();
+        }
+        resolve(instance.Parent!);
+    });
 }
 
 /**
@@ -67,9 +67,9 @@ export function waitUntilDescendantOfGame(instance: Instance): Promise<Instance>
  * @param seconds The time to destroy it in
  */
 export async function destroyAsync(instance: Instance, seconds = 0) {
-	if (seconds > 0) {
-		await delayAsync(seconds);
-	}
+    if (seconds > 0) {
+        await delayAsync(seconds);
+    }
 
-	instance.IsDescendantOf(game) && instance.Destroy();
+    instance.IsDescendantOf(game) && instance.Destroy();
 }

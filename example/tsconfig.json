@@ -15,21 +15,29 @@
     "moduleDetection": "force",
     "strict": true,
     "target": "ESNext",
-    "typeRoots": ["../node_modules/@rbxts"],
-
+    "typeRoots": [
+      "../node_modules/@rbxts"
+    ],
     // configurable
     "rootDirs": [
       "server",
       "client",
-      "../src",
+      "../src"
     ],
     "outDir": "build",
     "baseUrl": "../src",
     "incremental": true,
     "tsBuildInfoFile": "build/tsconfig.tsbuildinfo",
     "paths": {
-      "@zircon": ["../src"],
-      "@zircon/*": ["../src/*"]
+      "@zircon": [
+        "../src"
+      ],
+      "@zircon/*": [
+        "../src/*"
+      ],
+      "@/*": [
+        "../src/*"
+      ]
     },
     "plugins": [
       {

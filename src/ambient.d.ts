@@ -1,3 +1,3 @@
 declare interface GettableCores {
-	TopbarEnabled: boolean;
+    TopbarEnabled: boolean;
 }

@@ -1,66 +1,67 @@
 import {t} from "@rbxts/t";
-import Lazy from "../Shared/Lazy";
-import TSRequire from "../Shared/tsImportShim";
-import { ZirconClientDispatchService } from "./ClientDispatchService";
-import { ZirconClientRegistryService } from "./ClientRegistryService";
-import { ZirconDispatchService } from "./DispatchService";
-import { ZirconLogService } from "./LogService";
-import { ZirconRegistryService } from "./RegistryService";
+import Lazy from "@/Shared/Lazy";
+import TSRequire from "@/Shared/tsImportShim";
+import {ZirconClientDispatchService} from "@/Services/ClientDispatchService";
+import {ZirconClientRegistryService} from "@/Services/ClientRegistryService";
+import {ZirconDispatchService} from "@/Services/DispatchService";
+import {ZirconLogService} from "@/Services/LogService";
+import {ZirconRegistryService} from "@/Services/RegistryService";
+
 const IS_SERVER = game.GetService("RunService").IsServer();
 
 interface ServiceMap {
-	RegistryService: ZirconRegistryService;
-	DispatchService: ZirconDispatchService;
-	LogService: ZirconLogService;
-	ClientDispatchService: ZirconClientDispatchService;
-	ClientRegistryService: ZirconClientRegistryService;
+    RegistryService: ZirconRegistryService;
+    DispatchService: ZirconDispatchService;
+    LogService: ZirconLogService;
+    ClientDispatchService: ZirconClientDispatchService;
+    ClientRegistryService: ZirconClientRegistryService;
 }
 
 export type ServerDependencies = Array<keyof ServiceMap>;
 
 const HasDependencyInjection = t.interface({
-	dependencies: t.array(t.string),
-	LoadDependencies: t.callback,
+    dependencies: t.array(t.string),
+    LoadDependencies: t.callback,
 });
 
 const serviceMap = new Map<string, ServiceMap[keyof ServiceMap]>();
 const serviceLoading = new Set<string>();
 
 function GetServiceInt<K extends keyof ServiceMap>(service: K, importingFrom?: keyof ServiceMap): ServiceMap[K] {
-	if (serviceLoading.has(service)) {
-		throw `Cyclic service dependency ${importingFrom}<->${service}`;
-	}
+    if (serviceLoading.has(service)) {
+        throw `Cyclic service dependency ${importingFrom}<->${service}`;
+    }
 
-	let svcImport = serviceMap.get(service);
-	if (svcImport === undefined) {
-		serviceLoading.add(service);
+    let svcImport = serviceMap.get(service);
+    if (svcImport === undefined) {
+        serviceLoading.add(service);
 
-		// eslint-disable-next-line @typescript-eslint/no-var-requires
-		// const serviceMaster = require(script.FindFirstChild(service) as ModuleScript) as Map<string, ServiceMap[K]>;
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        // const serviceMaster = require(script.FindFirstChild(service) as ModuleScript) as Map<string, ServiceMap[K]>;
 
-		const serviceMaster = TSRequire(script, service) as Map<string, ServiceMap[K]>;
+        const serviceMaster = TSRequire(script, service) as Map<string, ServiceMap[K]>;
 
-		const importId = IS_SERVER ? `Zircon${service}` : `Zircon${service}`;
-		svcImport = serviceMaster.get(importId) as ServiceMap[K];
-		if (svcImport === undefined) {
-			throw `Tried importing service: ${service}, but no matching ${importId} declaration.`;
-		}
-		serviceMap.set(service, svcImport);
+        const importId = IS_SERVER ? `Zircon${service}` : `Zircon${service}`;
+        svcImport = serviceMaster.get(importId) as ServiceMap[K];
+        if (svcImport === undefined) {
+            throw `Tried importing service: ${service}, but no matching ${importId} declaration.`;
+        }
+        serviceMap.set(service, svcImport);
 
-		if (HasDependencyInjection(svcImport)) {
-			const dependencies = new Array<defined>();
-			for (const dependency of svcImport.dependencies) {
-				dependencies.push(Lazy(() => GetServiceInt(dependency as keyof ServiceMap, service)));
-			}
+        if (HasDependencyInjection(svcImport)) {
+            const dependencies = new Array<defined>();
+            for (const dependency of svcImport.dependencies) {
+                dependencies.push(Lazy(() => GetServiceInt(dependency as keyof ServiceMap, service)));
+            }
 
-			svcImport.LoadDependencies(...dependencies);
-		}
+            svcImport.LoadDependencies(...dependencies);
+        }
 
-		serviceLoading.delete(service);
-		return svcImport as ServiceMap[K];
-	} else {
-		return svcImport as ServiceMap[K];
-	}
+        serviceLoading.delete(service);
+        return svcImport as ServiceMap[K];
+    } else {
+        return svcImport as ServiceMap[K];
+    }
 }
 
 /**
@@ -70,5 +71,5 @@ function GetServiceInt<K extends keyof ServiceMap>(service: K, importingFrom?: k
  * @param service The service name
  */
 export function GetCommandService<K extends keyof ServiceMap>(service: K): ServiceMap[K] {
-	return GetServiceInt(service);
+    return GetServiceInt(service);
 }

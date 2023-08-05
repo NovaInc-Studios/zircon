@@ -1,5 +1,5 @@
 import Rodux from "@rbxts/rodux";
-import consoleReducer, { ConsoleActions, ConsoleReducer } from "./_reducers/ConsoleReducer";
+import consoleReducer, {ConsoleActions, ConsoleReducer} from "@/Client/BuiltInConsole/Store/_reducers/ConsoleReducer";
 
 /**
  * The Rodux client store for Zircon
