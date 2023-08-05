@@ -1,141 +1,147 @@
-import { LogEvent, LogLevel } from "@rbxts/log";
-import { MessageTemplateParser, PropertyToken } from "@rbxts/message-templates";
-import { DestructureMode, TemplateTokenKind } from "@rbxts/message-templates/out/MessageTemplateToken";
+import {LogEvent, LogLevel} from "@rbxts/log";
+import {MessageTemplateParser, PropertyToken} from "@rbxts/message-templates";
+import {DestructureMode, TemplateTokenKind} from "@rbxts/message-templates/out/MessageTemplateToken";
 import ZrContext from "@rbxts/zirconium/out/Data/Context";
-import { RbxSerializer } from "@rbxts/message-templates/out/RbxSerializer";
-import { ZirconFunction } from "./ZirconFunction";
-import { RunService } from "@rbxts/services";
-import { ZrInputStream, ZrOutputStream } from "@rbxts/zirconium/out/Data/Stream";
+import {RbxSerializer} from "@rbxts/message-templates/out/RbxSerializer";
+import {ZirconFunction} from "./ZirconFunction";
+import {RunService} from "@rbxts/services";
+import {ZrInputStream, ZrOutputStream} from "@rbxts/zirconium/out/Data/Stream";
 
 export interface ReadonlyZirconContext {
-	GetExecutor(): Player;
-	GetFunctionName(): string;
+    GetExecutor(): Player;
+
+    GetFunctionName(): string;
 }
 
 export interface ZirconBeforeContext extends ReadonlyZirconContext {
-	GetInput(): ZrInputStream;
+    GetInput(): ZrInputStream;
 }
+
 export interface ZirconAfterContext extends ReadonlyZirconContext {
-	GetInput(): ZrInputStream;
-	GetOutput(): ZrOutputStream;
-	GetLogs(): ReadonlyArray<LogEvent>;
+    GetInput(): ZrInputStream;
+
+    GetOutput(): ZrOutputStream;
+
+    GetLogs(): ReadonlyArray<LogEvent>;
 }
 
 export class ZirconContext implements ReadonlyZirconContext, ZirconBeforeContext, ZirconAfterContext {
-	private logs = new Array<LogEvent>();
+    private logs = new Array<LogEvent>();
 
-	constructor(private innerContext: ZrContext, private executingFunction: ZirconFunction<any, any>) {}
-	public GetExecutor() {
-		const executor = this.innerContext.getExecutor();
-		assert(executor);
-		return executor;
-	}
+    constructor(private innerContext: ZrContext, private executingFunction: ZirconFunction<any, any>) {
+    }
 
-	/**
-	 * Writes a log response to the executing player
-	 * @param level The log level
-	 * @param template The template string
-	 * @param args The arguments to the template string
-	 */
-	private Log(level: LogLevel, template: string, ...args: unknown[]) {
-		if (RunService.IsServer()) {
-			import("../Services/LogService").then((log) => {
-				const message: Writable<LogEvent> = {
-					Level: level,
-					SourceContext: `(function '${this.executingFunction.GetName()}')`,
-					Template: template,
-					Timestamp: DateTime.now().ToIsoDate(),
-					LogToPlayer: this.GetExecutor(),
-				};
+    public GetExecutor() {
+        const executor = this.innerContext.getExecutor();
+        assert(executor);
+        return executor;
+    }
 
-				const tokens = MessageTemplateParser.GetTokens(template);
-				const propertyTokens = tokens.filter((t): t is PropertyToken => t.kind === TemplateTokenKind.Property);
+    /**
+     * Logs an information message to the calling player
+     * @param template The template string
+     * @param args The template string args
+     */
+    public LogInfo(template: string, ...args: unknown[]) {
+        this.Log(LogLevel.Information, template, ...args);
+    }
 
-				let idx = 0;
-				for (const token of propertyTokens) {
-					const arg = args[idx++];
+    /**
+     * Logs a warning message to the calling player
+     * @param template The template string
+     * @param args The template string args
+     */
+    public LogWarning(template: string, ...args: unknown[]) {
+        this.Log(LogLevel.Warning, template, ...args);
+    }
 
-					if (idx <= args.size()) {
-						if (arg !== undefined) {
-							if (token.destructureMode === DestructureMode.ToString) {
-								message[token.propertyName] = tostring(arg);
-							} else {
-								message[token.propertyName] = typeIs(arg, "table") ? arg : RbxSerializer.Serialize(arg);
-							}
-						}
-					}
-				}
+    /**
+     * Logs an error message to the calling player
+     * @param template The template string
+     * @param args The template string args
+     */
+    public LogError(template: string, ...args: unknown[]) {
+        this.Log(LogLevel.Error, template, ...args);
+    }
 
-				log.ZirconLogService.WriteStructured(message);
-				this.logs.push(message);
-			});
-		} else {
-			import("../Client/index").then(({ default: client }) => {
-				const log: LogEvent = {
-					Level: level,
-					SourceContext: `(function '${this.executingFunction.GetName()}')`,
-					Template: template,
-					Timestamp: DateTime.now().ToIsoDate(),
-					LogToPlayer: this.GetExecutor(),
-				};
-				client.StructuredLog(log);
-				this.logs.push(log);
-			});
-		}
-	}
+    public GetLogs(): ReadonlyArray<LogEvent> {
+        return this.logs;
+    }
 
-	/**
-	 * Logs an information message to the calling player
-	 * @param template The template string
-	 * @param args The template string args
-	 */
-	public LogInfo(template: string, ...args: unknown[]) {
-		this.Log(LogLevel.Information, template, ...args);
-	}
+    /**
+     * Gets the output stream for the `|` pipe operator
+     * @returns The output stream
+     */
+    public GetOutput() {
+        return this.innerContext.getOutput();
+    }
 
-	/**
-	 * Logs a warning message to the calling player
-	 * @param template The template string
-	 * @param args The template string args
-	 */
-	public LogWarning(template: string, ...args: unknown[]) {
-		this.Log(LogLevel.Warning, template, ...args);
-	}
+    /**
+     * Gets the input stream for the `|` pipe operator
+     * @returns The input stream
+     */
+    public GetInput() {
+        return this.innerContext.getInput();
+    }
 
-	/**
-	 * Logs an error message to the calling player
-	 * @param template The template string
-	 * @param args The template string args
-	 */
-	public LogError(template: string, ...args: unknown[]) {
-		this.Log(LogLevel.Error, template, ...args);
-	}
+    /**
+     * Gets the name of the calling function
+     * @returns The name of the calling function
+     */
+    public GetFunctionName() {
+        return this.executingFunction.GetName();
+    }
 
-	public GetLogs(): ReadonlyArray<LogEvent> {
-		return this.logs;
-	}
+    /**
+     * Writes a log response to the executing player
+     * @param level The log level
+     * @param template The template string
+     * @param args The arguments to the template string
+     */
+    private Log(level: LogLevel, template: string, ...args: unknown[]) {
+        if (RunService.IsServer()) {
+            import("../Services/LogService").then((log) => {
+                const message: Writable<LogEvent> = {
+                    Level: level,
+                    SourceContext: `(function '${this.executingFunction.GetName()}')`,
+                    Template: template,
+                    Timestamp: DateTime.now().ToIsoDate(),
+                    LogToPlayer: this.GetExecutor(),
+                };
 
-	/**
-	 * Gets the output stream for the `|` pipe operator
-	 * @returns The output stream
-	 */
-	public GetOutput() {
-		return this.innerContext.getOutput();
-	}
+                const tokens = MessageTemplateParser.GetTokens(template);
+                const propertyTokens = tokens.filter((t): t is PropertyToken => t.kind === TemplateTokenKind.Property);
 
-	/**
-	 * Gets the input stream for the `|` pipe operator
-	 * @returns The input stream
-	 */
-	public GetInput() {
-		return this.innerContext.getInput();
-	}
+                let idx = 0;
+                for (const token of propertyTokens) {
+                    const arg = args[idx++];
 
-	/**
-	 * Gets the name of the calling function
-	 * @returns The name of the calling function
-	 */
-	public GetFunctionName() {
-		return this.executingFunction.GetName();
-	}
+                    if (idx <= args.size()) {
+                        if (arg !== undefined) {
+                            if (token.destructureMode === DestructureMode.ToString) {
+                                message[token.propertyName] = tostring(arg);
+                            } else {
+                                message[token.propertyName] = typeIs(arg, "table") ? arg : RbxSerializer.Serialize(arg);
+                            }
+                        }
+                    }
+                }
+
+                log.ZirconLogService.WriteStructured(message);
+                this.logs.push(message);
+            });
+        } else {
+            import("../Client/index").then(({default: client}) => {
+                const log: LogEvent = {
+                    Level: level,
+                    SourceContext: `(function '${this.executingFunction.GetName()}')`,
+                    Template: template,
+                    Timestamp: DateTime.now().ToIsoDate(),
+                    LogToPlayer: this.GetExecutor(),
+                };
+                client.StructuredLog(log);
+                this.logs.push(log);
+            });
+        }
+    }
 }
