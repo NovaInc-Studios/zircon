@@ -170,7 +170,7 @@ export default class ZirconSyntaxTextBox extends Roact.Component<SyntaxTextBoxPr
                                 TextTransparency={0.75}
                                 Event={{
                                     Focused: (rbx) => {
-                                        this.props.ClearOnFocus ? this.setState({focused: true, source: ""})
+                                        this.props.ClearOnFocus ? this.setState({focused: true})
                                             : this.setState({focused: true});
 
                                         this.focusMaid.GiveTask(
@@ -193,13 +193,14 @@ export default class ZirconSyntaxTextBox extends Roact.Component<SyntaxTextBoxPr
                                     FocusLost: (textBox, enterPressed, inputThatCausedFocusLoss) => {
                                         if (enterPressed && !this.props.MultiLine) {
                                             this.props.OnEnterSubmit?.(textBox.Text);
-                                            this.props.ClearOnFocus && this.setState({source: ""});
+                                            !this.props.ClearOnFocus && this.setState({source: ""});
                                         }
 
                                         this.setState({focused: false});
 
                                         if (enterPressed && this.props.RefocusOnSubmit) {
                                             // Needs to be deferred, otherwise roblox keeps the enter key there.
+                                            task.wait(); // Wait for the enter key to be released
                                             task.defer(() => textBox.CaptureFocus());
                                         }
 
