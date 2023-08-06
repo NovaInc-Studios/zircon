@@ -67,7 +67,11 @@ interface SyntaxTextBoxProps {
 
     OnCancel?: () => void;
 
+    OnKeyDown?: (keyCode: Enum.KeyCode, io: InputObject) => void;
+
     OnControlKey?: (keyCode: Enum.KeyCode, io: InputObject) => void;
+
+    OnTextChanged?: (textBox: TextBox, text: string) => void;
 }
 
 /**
@@ -163,7 +167,10 @@ export default class ZirconSyntaxTextBox extends Roact.Component<SyntaxTextBoxPr
                                 Size={new UDim2(1, 0, 1, 0)}
                                 Text={this.state.source}
                                 Change={{
-                                    Text: (rbx) => this.setState({source: rbx.Text.gsub("\t", " ")[0]}),
+                                    Text: (rbx) => {
+                                        this.setState({source: rbx.Text.gsub("\t", " ")[0]})
+                                        this.props.OnTextChanged?.(rbx, this.state.source);
+                                    },
                                     CursorPosition: (rbx) =>
                                         this.setState({virtualCursorPosition: rbx.CursorPosition}),
                                 }}
@@ -186,6 +193,8 @@ export default class ZirconSyntaxTextBox extends Roact.Component<SyntaxTextBoxPr
                                                     } else if (io.IsModifierKeyDown(Enum.ModifierKey.Ctrl)) {
                                                         this.props.OnControlKey?.(io.KeyCode, io);
                                                     }
+
+                                                    this.props.OnKeyDown?.(io.KeyCode, io);
                                                 }
                                             }),
                                         );

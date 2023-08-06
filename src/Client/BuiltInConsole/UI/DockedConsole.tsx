@@ -16,12 +16,13 @@ import ZirconClientStore from "@/Client/BuiltInConsole/Store";
 import ThemeContext from "@/Client/UIKit/ThemeContext";
 import {ZirconContext, ZirconLogLevel, ZirconMessageType} from "@/Client/Types";
 import Dropdown from "@/Client/Components/Dropdown";
-import {Lighting, Workspace} from "@rbxts/services";
+import {Lighting, TextService, Workspace} from "@rbxts/services";
 import Padding from "@/Client/Components/Padding";
 import SearchTextBox from "@/Client/Components/SearchTextBox";
 import MultiSelectDropdown from "@/Client/Components/MultiSelectDropdown";
 import {$print} from "rbxts-transform-debug";
 import {GetCommandService} from "@/Services";
+import {AutoComplete} from "@/Client/Components/AutoComplete";
 
 export interface DockedConsoleProps extends MappedProps, MappedDispatch {
 }
@@ -36,6 +37,9 @@ interface DockedConsoleState {
     historyIndex: number;
     searchQuery: string;
     context: ZirconContext;
+
+    autoCompleteVisible: boolean;
+    autoCompletePosition: Vector2;
 }
 
 const MAX_SIZE = 28 * 10; // 18
@@ -69,6 +73,8 @@ class ZirconConsoleComponent extends Roact.Component<DockedConsoleProps, DockedC
             source: "",
             sizeY: MAX_SIZE,
             context: !props.executionEnabled ? ZirconContext.Client : ZirconContext.Server,
+            autoCompleteVisible: false,
+            autoCompletePosition: new Vector2(0, 0),
         };
 
         // Initialization
@@ -211,6 +217,12 @@ class ZirconConsoleComponent extends Roact.Component<DockedConsoleProps, DockedC
                             Position={new UDim2(0, 16, 0, 0)}
                             Focused={this.state.isVisible}
                             Source={this.state.source}
+                            OnKeyDown={(key, io) => {
+                                if (key === Enum.KeyCode.Left && this.state.autoCompleteVisible ||
+                                    key === Enum.KeyCode.Right && this.state.autoCompleteVisible) {
+                                    this.setState({autoCompleteVisible: false});
+                                }
+                            }}
                             OnControlKey={(key, io) => {
                                 if (key === Enum.KeyCode.E) {
                                     if (!this.props.clientExecutionEnabled || !this.props.executionEnabled) {
@@ -268,6 +280,12 @@ class ZirconConsoleComponent extends Roact.Component<DockedConsoleProps, DockedC
                                     source: text,
                                 });
                             }}
+                            OnTextChanged={(textBox, text) => {
+                                this.setState({source: text, autoCompleteVisible: text.size() > 0});
+
+                                const textSize = TextService.GetTextSize(textBox.Text, textBox.TextSize, textBox.Font, textBox.AbsoluteSize);
+                                this.setState({autoCompletePosition: new Vector2(textBox.AbsolutePosition.X + textSize.X + 1, textBox.AbsolutePosition.Y)});
+                            }}
                         />
                         <ZirconIconButton
                             Icon={this.state.isFullView ? "UpDoubleArrow" : "DownDoubleArrow"}
@@ -311,6 +329,25 @@ class ZirconConsoleComponent extends Roact.Component<DockedConsoleProps, DockedC
                             >
                                 <ZirconOutput/>
                             </frame>
+
+                            <AutoComplete
+                                visible={this.state.autoCompleteVisible}
+                                position={this.state.autoCompletePosition}
+                                items={[
+                                    {
+                                        Name: "print",
+                                        Type: "Function",
+                                    },
+                                    {
+                                        Name: "warn",
+                                        Type: "Function",
+                                    },
+                                    {
+                                        Name: "error",
+                                        Type: "Function",
+                                    },
+                                ]}
+                            />
 
                             <frame
                                 Size={new UDim2(0, 100, 0, 30)}
