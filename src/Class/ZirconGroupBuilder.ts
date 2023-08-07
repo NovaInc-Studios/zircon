@@ -33,7 +33,7 @@ export class ZirconGroupBuilder {
 
     public groupLink = new Array<ZirconGroupLink>();
     public userIds = new Array<number>();
-    public bindType: ZirconBindingType = 0;
+    public bindType: ZirconBindingType | number = 0;
 
     public constructor(private parent: ZirconConfigurationBuilder, private rank: number, private id: string) {
     }
