@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - v2
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 'latest'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Zip
+        uses: thedoctor0/zip-release@0.7.1
+        with:
+          type: 'zip'
+          filename: 'release.zip'
+          exclusions: '*.git* /*node_modules/* .editorconfig /*src/*'
+
+      - name: Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: 'release.zip'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: false
+          prerelease: false
+          releaseName: 'Release ${{ github.event.pull_request.head.sha }}'
+          releaseNotes: 'Release ${{ github.event.pull_request.head.sha }}'
+          releaseNotesFile: 'release-notes.md'
+          overwrite: true
