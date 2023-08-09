@@ -8,7 +8,7 @@ on:
       - v2
 
 jobs:
-  deploy:
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -21,11 +21,8 @@ jobs:
         with:
           node-version: 'latest'
 
-      - name: Install Dependencies
+      - name: Install Dependencies and Build
         run: npm install
-
-      - name: Build
-        run: npm run build
 
       - name: Zip
         uses: thedoctor0/zip-release@0.7.1
@@ -42,6 +39,3 @@ jobs:
           draft: false
           prerelease: false
           releaseName: 'Release ${{ github.event.pull_request.head.sha }}'
-          releaseNotes: 'Release ${{ github.event.pull_request.head.sha }}'
-          releaseNotesFile: 'release-notes.md'
-          overwrite: true
